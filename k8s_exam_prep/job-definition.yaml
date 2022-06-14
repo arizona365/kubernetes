@@ -1,0 +1,14 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: random-error-job
+spec:
+  completions: 3 #The Job tries to create new pods until it has three successful completions and that completes the Job
+  parallelism: 3 #The Job first creates three pods at once.It is intelligent enough to create one pod at a time until we getr a total of three complate pods
+  template:
+    spec:
+      containers:
+        - name: random-error
+          image: kodekloud/random-error
+          command: ["expr", "3", "+", "2"] # basic math of command
+      restartPolicy: Never # restartPolicy required your pod of situation never/always/or 5 times..

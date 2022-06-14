@@ -1,0 +1,16 @@
+# A persistent volume is a cluster wide pool of storage volumes configured
+#     by an administrator to be used by users deploying applications on the cluster
+#     The users can now select storage from this pool using Persistent volume claims
+
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-voll
+spec:
+  accessMode: #access mode how a Volume should be mounted on the host.Whetherin a Read-Only mode or ReadWrite mode, etc
+    - ReadWriteOne
+  capacity:
+    storage: 1Gi
+  awsWlasticBlockStore:
+    volumeID: <volume-id>
+    fsType: ext4

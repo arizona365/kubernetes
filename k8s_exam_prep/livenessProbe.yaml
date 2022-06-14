@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    run: nginx1401
+  name: nginx1401
+spec:
+  containers:
+  - image: nginx
+    name: nginx1401
+    livenessProbe:
+      exec:
+        command:
+        - /bin/sh
+        - ls
+        - /var/www/html/probe
+      initialDelaySeconds: 10
+      periodSeconds: 60

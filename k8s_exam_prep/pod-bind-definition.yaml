@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  labels:
+    name: nginx
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      ports:
+        - containerPort: 8080
+  nodeName: node01 #schedule your pod in the mentioned node
+
+---
+"""that is scheduling your existed pod to another new node
+"""
+apiVersion: v1
+kind: Binding
+metadata:
+  name: nginx
+target:
+  apiVersion: v1
+  kind: Node
+  name: node02

@@ -1,0 +1,9 @@
+apiVersion: rbac.authorization.k8s.io/vq
+kind: ClusterRole
+metadata:
+  name: cluster-administrator
+rules:
+  - apiGroups: [""]
+    resources: ["nodes"]
+    verbs: ["list", "get", "create", "delete"]
+    resourceNames: ["blue", "orange"] #name of the pod tha you can access only those pods

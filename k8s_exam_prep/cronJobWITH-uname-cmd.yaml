@@ -1,0 +1,23 @@
+#A CronJob is a job that can be scheduled just like Cron tab in Linux.
+#Sat for example you have a Job that generates a report and sends an email.
+
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: periodic
+spec:
+  schedule: “*/1 * * * *"
+  jobTemplate:
+    spec:
+      activeDeadlineSeconds: 22
+      template:
+        spec:
+          containers:
+          - name: periodic
+            image: busybox
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - uname
+          restartPolicy: OnFailure

@@ -1,0 +1,32 @@
+What is the kubernetes API? We learned about the Kube API server. Whatever operations we have done so far with yhe cluster,
+we have been interacting with the API server one way or other. Either through the kubectl utility or directly.
+Say we want to check the version, we can access the api server at the master nodes address followed by th port which is 6443 
+by default and the API version. It returns the version. Similarly to get the list of pods, you would access the URL api/v1/pods.
+Our focus in this lecture is about these API paths. The /version and /api. The Kubernetes API is grouped into multiple such 
+groups based on their purpose. Such as one for apis, one for healthz ,metrics and logs etc. The version API is for viewing the 
+version of the cluster as we just saw the metrics and healthzapi are used to monitor the health of the cluster. The logs are used for
+integrating with third party logging  applications. We will focus on the API is responsible for the cluster of functionality.
+These APIs (api/apis) are categorized into two. The core group and the named grous. The core group(/api) is where all core
+functionality exists. Such as namespaces, pods, replication controllers, evennts, endpoints, nodes,bindings, persistent volumes, 
+persistentvolumeclaim, configmaps, secrets, services etc. The named group(/apis) APIs are more organized and going forward all the 
+newer features are going to be made available to these named groups. It has gropus under it for apps, extensions, networking, 
+storage, authentication, authorization certificates etc. Shown here are just a few. Witthin apps, you have deployments, replicasets, 
+statefullsets. Within networking you have network polcies certificates have these certificates sign requests so the ones at the top are 
+API groups and the ones at the bottom are resourcesin those groups. Each resources in this has set of actions associated with them.
+Things that you can do with these resourcessuch as list the deployments get information about one of these deployments, create a deployments
+delete a deployment, update or watch a deployment etc. These are known as verbs. The kubernetes API reference page can tell you what 
+the API group is for each object select an object and the first section in the documentation page shows its group details v1/core is just v1.
+You can also view these on your kubernetes cluster. Access you kube-api server at port 644, without any path and it will list the available 
+api groups it returns all supported groups. A quick note on accessing the cluster API: if you want to access the API directly through 
+"curl http://localhost:6443 -k" curl then you will not be allowed access except for certain APIs like version, as you have not specified 
+any authentication mechanisms. So you have to authenticate to the API using your certificate files by passing them in the command line. An
+alternate option is to start a kubectl proxy client. The kubectk proxy command, launches a proxy service locally on port 8001 and uses
+credentials and certificates from your kubeconfig file to access the cluster. That way you dont have to specify those in the curl 
+command. Now you can access the kubectl proxy service at port 8001 and the proxy will use the credentials from kube-config file to forward 
+your request to the kube api server. This will list all avaiblable APIs at root. So here are two terms that kind of sound the same. 
+"The Kube Proxy" and "kubectl proxy" well they are not the same. Kube Proxy used to enable connectivity between parts and services across 
+different nodes in the cluster. Whereas kubectl proxy is an HTTPS proxy service created bt kubectl utility to access the kube-api server. 
+So what to take away from this. All resources in Kubernetes ate grouped into diferent api groups. At the top level you have core api 
+group and named api group. under the named api group you have one for each section. Under this API group you have the different resources 
+and each resource has a set associated actions known as verbs.In the next section on authorization we can see how use these to allow or 
+deny access to users.

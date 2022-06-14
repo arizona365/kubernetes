@@ -1,0 +1,25 @@
+# Pod"s created in Kubernetes are transient in nature.When a Pod is
+# created to process data and then deleted, the data processed by it gets deleted as well.
+# or this we attach a volume to the pod. The data generated b the Pod is now stored in the volume.
+# And even after the pod is deleted the data remains.
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: random-number-generator
+spec:
+  containers:
+  - image: alpine
+    name: alpine
+    command: ["/bin/sh","-c"]
+    args: ["shuf -i 0-100 -n 1 >> /pot/number.out;"]
+    volumeMounts:
+      - mountPath: /opt
+        name: data-volume
+
+  volumes:
+  - name: data-volume
+    hostPath:
+      path: /data
+      type: Directory

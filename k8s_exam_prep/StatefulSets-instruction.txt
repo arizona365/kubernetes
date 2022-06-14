@@ -1,0 +1,61 @@
+'''We install and setup MySQL on the server and create a database.
+Our database is now operational.Other applications can nw write data to our database.
+To wtithstand failures, we are tasked to deploy a high availability solution,
+We deploy additional servers and install MySQL on those as well. We have a blank
+database on the new server.How do we replicate the data from the orjinal database to the
+new databases on the new servers? Now before we getting to that we will use MySQL replication
+as an example.You dont have to be a database admin or be an expert on MySQL to follow through.
+Back to our question on how do we replicate the database to the databases in the new server.
+There are different topologies available.The most straightforward one being a single-master
+multi-slave topology,where all rights come into the master server,and reads can be served by
+either the master or any of the slave servers.The master server sholuld be set up first before
+deploying the slaves.Once the slaves deployed, perform an initial clone of the database
+from the master server to the firdt slave.After the initial copy, enable continuous replication
+from the master to that slave so that the database on the slave node is always in sync the database
+on the master.We then proceed to set up the second slave.We could do it same way, where
+we clone data from the master, but every time you do that, it is goung to impact the
+resources on the master, especially the network interface.Since we have a copy of the masters data
+on the first slave,it is better to just copy the data from it instead of the master.
+We wait for slave 1 to be ready,and then clone data from slave 1 to slave 2.Finally, we
+enable continuous replication on slave 2 from the master. Note that both these slaves are
+configured with the address of the master host.When replication is initialized, you point
+the slave to the master with a master"s host name or address.That way, the slaves know where the
+master is.To summarize, we want the master to come uo firdt and then the slaves.We want ro clone
+data from master to slave 1 first, and then enable replication from master to slave 1,
+and then wait for slave 1 to be ready, and then clone data from slave 1 to slave 2, and then
+enable continuous replication from master to slave 2, and make sure that the slaves are configured
+with the address of the master node.This is the high-level plan fo deploying MySQL Cluster.
+In the Kubernetes world, we have learned so far that such kind of a deployment in the each
+of these instances, including the master and slaves, are a pod part of a deployment.
+That way, we can easily scale it up or down as required.In step one, we want the master to come up
+first and then the slaves.In case of the slaves, we want slave 1 to come up first, perform
+an initial clone of data from the master.In step four, as you can see, we want slave 2 to come up next
+and clone data from slave 1.Now, with deployments, you cant guarantee that order.With deployments,
+all pods part of the deployment come up at the same time. The first step cant be implemented with a
+deployment.In the following steps, while cloning data from master to slave 1, or slave 1 to slave 2, or
+while enabling continuous replication on the slaves in steps we must be able to differentiate the master
+and slave pods from each other. We want to designate one of these  pods as master and others as slave.
+We need the master to have a constant host name or address, one that does not change.We cannot rely on the
+IP address, as we know by now that IP address of pods are dynamically assigned, and they may change when
+the pod gets recreated.We definitely need a static host name.As we have seen while working with deployments,
+the pods come up random names,so thats one help us here.Even if we decide to desihnate one of these pods
+as the master and use its name to configure the slaves,if that pod crashes and the deployment creates a new
+pod in its place, it is going to come up with a totally new pod name.Now, the slaves pointing to an address
+that does not exist.Because of all if these, the remaining steps can not be executed.That is where StatefulSets
+come in.StatefulSets are the similar to deployment sets, as in they create pods based on a teplate.
+They can scale up scale down.They can perform rolling updates and rollbacks, but there are some differences.
+With StatefulSets, pods are created in a sequential order.after the first pod is deployed, it must be in a
+running and ready state before the next pod is deployed. That helps us ensure that the master is deployed first
+and then slave 1 and then slave 2.StatefulSets assign a unique ordinal index to each pod in numbers starting from
+zero for the first pod and increments by one.Each pod gets a unique name derived from this index combined with
+the StatefulSet name.The first pod gets mysql-0 the second gets mysql-1,mysql-2...No more random names.
+You can rely on these names going forward.You can be sure that the first pod in any StatefulSet is always
+going to be the name of the StatefulSet followed by -0.You can always use that as the master in any setup.
+The pod mysql-2 knows that it has to perform an initial clone of data from pod mysql-1.Say, if you were
+to scale up the deployment by deploying another pod, mysql-3, for instance, then it would know that it can
+perform a clone from mysql-2.To enable continuous replication, you can now point the slaves to the master at mysql-0
+Even if the master fails and the pod is recreated, it would still come up with the same name.StatefulSets maintain
+a sticky identity for each of their pods, and these help the remaining steps.The master is now always the master
+and available at the address mysql-0, and that is why you need StatefulSets.
+
+'''

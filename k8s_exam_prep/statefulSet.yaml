@@ -1,0 +1,31 @@
+# when you create a StatefulSet using definition file. it creates Pods one after the other,
+# taht is ordered graceful deployment. Each Pod gets a stable, DNS record on the network
+# that any other application can use to access a Pod.When you scale the StatefukSet,
+# it scales in an ordered, graceful fashion where each Pod comes up, becomes ready
+# and only then the next one comes up. This helps when you want to scale MySQL databases,
+# as each instance can clone from the previus instance. It works reverse order when they scale
+# it down. The last instance is removed first followed by the second last one. The same is true
+# for termination.When you delete a StatefulSet, the Pods deleted in the reverse order.
+
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+  labels:
+    app: mysql
+
+spec:
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mysql
+  serviceName: mysql-h #you must specify your service head

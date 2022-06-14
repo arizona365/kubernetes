@@ -1,0 +1,17 @@
+apiVersion: batch/vibeta1
+kind: CronJob
+metadata:
+  name: reporting-cron-job
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      completions: 3 #create success pod of number. That creates one by one
+      parallelism: 3 #create success pod of nuber. That creates in threes
+      template:
+        spec:
+          containers:
+            - name: random-error
+              image: kodekloud/random-error
+              command: [ "expr", "3", "+", "2" ] # basic math of command
+          restartPolicy: Never # restartPolicy required your pod of situation never/always/or 5 times..

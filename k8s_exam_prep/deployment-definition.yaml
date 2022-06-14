@@ -1,0 +1,32 @@
+#"""Deployment provides us with capability to upgrade the underlying instances 
+#seamlessly using rolling updates, undo changes , and pause and resume changes as required
+#"""
+
+#''' Deployment updates  yaml file you need only give new version of the image
+#then kubernetes will update containers one by one. Update process will be
+# one by one because if all containers update same time that means end user
+# cant reach to application'''
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myapp-deployment
+  labels:
+    app: myapp
+    type: front-end
+spec:
+  template:
+    metadata:
+      name: myapp-pod
+      labels:
+        app: myapp
+        type: front-end
+    spec:
+      containers:
+        - name: nginx-container
+          image: nginx:1.7.1 #check image version on docker hup end set your version number
+  replicas: 3
+  selector:
+    matchlabels:
+      type: front-end

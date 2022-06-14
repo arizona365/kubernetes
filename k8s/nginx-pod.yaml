@@ -1,0 +1,12 @@
+apiVersion: v1 #it is version of your kubernetes api
+kind: Pod
+metadata:
+  name: nginx
+  #namespace: myapp 
+  labels:
+    run: nginx
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+   

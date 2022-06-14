@@ -1,0 +1,14 @@
+apiVerison: v1
+kind: pod
+metadata:
+  name: myapp-pod
+  labels :
+    app: mysql
+spec:
+  containers:
+    - name: mysql
+      image: mysql
+
+  subdomain: mysql-h #you must specify the subdomain to a value the same as the name of service
+  hostname: mysql-pod #for creating A records for individual pods.you must specify hostname option
+                      #then does it create a DNS recor with a pod name as well

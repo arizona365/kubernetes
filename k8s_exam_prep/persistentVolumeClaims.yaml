@@ -1,0 +1,33 @@
+# Persistent Volume and Persistent Volume Claims are two separate
+# object in the Kubernetes Namespace.An Administrator creates a set
+# of Persistent Volume and a user creates Persistent Volume Claims to use the storage
+# Ones the Persistent Volume Claims are created.Kubernetes binds
+# the Persistent Volumes to Claims based on the request and properties set on the volume. Every Persistent Volume
+# Claim is bound to a single Persistent Volume during the binding process
+# Kubernetes tries to find Persistent Volume that has sufficient capacity as requested by the claim
+# And any other request properties such as Access Modes, Volume Modes, Storage Class,etc
+# However, if there are multiple possible matches for a single claim and you would like to specifically
+# use a particular volume, you col=uld still use LABELS and SELECTORS to bind
+# to the right volumes. Finally, note that a smaller claim may get bound to a larger volume
+# If all the other criteria matches and there are no better options. There is a one-to-one
+# relationship between claims and volumes so no other claims can utilize he remaining capacity in the volume.
+# If there are no volumes available the Persistent Volume Claim will remain
+# in a pending state until newer volumes are made available to the cluster
+# Ones newer volumes are available the claim will automatically be bound to the newly available volume
+
+apiVersion: v1
+name: PersistentVolumeClaim
+metadata:
+  name: my-claims
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storaga: 500Mi
+
+# When the claim is created, Kubernetes looks at the volume created previously.
+# the AccessModes match the capacity requested is 500Mg, but the volume is configured
+# with 1GB(in the Persistent volume Manifest file) of storage.Since there are no
+# other volumes available the Persistent Volume Claim is bound to the Persistent Volume.
+

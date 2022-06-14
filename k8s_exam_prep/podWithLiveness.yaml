@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: simple-webapp
+  labels:
+    name: simple-webapp
+spec:
+  containers:
+    - name: simple-webapp
+      image: simple-webapp
+      ports:
+        - containersPort: 8080
+      livenessProbe:
+        httpGet:           #for http
+          path: /api/healthy
+          port: 8080
+        initialDelaySeconds: 10
+        periodSeconds: 5
+        failureTreshold: 8
+
+    #redinessProbe:     #for tcp
+       #tcpSocket:
+         #port: 3306
+
+     #redinessProbe:   # for exec command or describe command
+      # exec:
+       #  command:
+         #  - cat
+         #  - /app/is_healthy

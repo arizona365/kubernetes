@@ -1,0 +1,4 @@
+Agenda 
+AKS architecture
+On-board/migrate to AKS [gettin access, adopt Configmap, adopt ECS vault, integrate datadog, implement HTTPS]
+AKS Availablity timeless in DEV, Preprod an Prod

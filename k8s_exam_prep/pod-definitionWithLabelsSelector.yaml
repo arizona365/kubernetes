@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: simple-webapp
+  labels:
+    name: App1
+    function: Front-end
+
+spec:
+  containers:
+    - name: simple-webapp
+      image: simple-webapp-image
+      ports:
+        - containerPort: 8080
+
+  #kubectl get pods --selector app=App1

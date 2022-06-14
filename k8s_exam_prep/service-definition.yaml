@@ -1,0 +1,16 @@
+#  nodePort yaml file that shows how you connect to your node
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: myapp-service
+spec:
+  type: NodePort
+  ports:
+    - targetPort: 80
+      port: 80
+      nodePort: 30008
+  selector: #selector is representing pod labels
+    app: myapp
+    type: front-end

@@ -1,0 +1,29 @@
+"""What is the one way to reach the master pod directly. If you know the IP address
+of the master pod you can configure than in the web server but as we know, IP addresses
+are dynamic and can change if the pod is recreated, so we can't use that. We also
+learned that each pod can be reached through its DNS address but the pods DNS address
+is created from its IP address something like this.We can't use that either.What we
+need is a service that does not load-balance requests but gives us a DNS entry to reach
+each pod, and that is what a HEADLESS SERVICE is.A headless service is created like
+normal service, but it does not have an IP of its own like a cluster IP fr a normal
+service. It does not perform any load-balancing.All it does create DNS enries for each pod
+using the pod name and a subdomain.When you create a headless service say with the name
+MySQL-H each pod gets a DNS record created in the from pod name dot the ma,e of the
+headless service dot namespace followed by the cluster domain.In this case each pod gets
+pod name dot headless service which happens to be the
+MySQL-0.MySQL-H.default.service.cluster.local The web application can now point to the DNS
+entry for the master, MySQL server@mysqlzero.MySQLH.default.SVC.cluster.local and that
+should always work.That DNS entry will always point to the master pod in the MySQL
+deployment.
+"""
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-h
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: mysql
+  clusterIP: None
+
