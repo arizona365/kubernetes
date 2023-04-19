@@ -1,0 +1,30 @@
+dashboard:
+  columns:
+    - unit-tests
+    - build
+    - dashboard
+  rows:
+    - my-project
+  templates:
+    my-project:
+      title: My Project
+      jobs:
+        - unit-tests
+        - build
+        - dashboard
+# Job to generate the dashboard
+dashboard:
+  stage: deploy
+  script:
+    - generate_dashboard.sh
+  artifacts:
+    paths:
+      - dashboard.html
+    expire_in: 1 week
+  dependencies:
+    - unit-tests
+    - build
+
+
+
+
